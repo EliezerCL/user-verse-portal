@@ -43,23 +43,26 @@ function SettingsPage() {
     <AppShell title="Configurações">
       <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
         <nav className="card-panel flex gap-2 overflow-x-auto p-2 lg:flex-col lg:overflow-visible lg:p-3">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setCategory(c.id)}
-              className={`flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-left transition-colors ${
-                category === c.id ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
-              }`}
-            >
-              <span aria-hidden className="text-lg">{c.icon}</span>
-              <span>
-                <span className="block text-sm font-semibold">{c.label}</span>
-                <span className={`hidden text-xs lg:block ${category === c.id ? "opacity-80" : "text-muted-foreground"}`}>
-                  {c.description}
+          {CATEGORIES.map((c) => {
+            const Icon = c.icon;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setCategory(c.id)}
+                className={`flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-left transition-colors ${
+                  category === c.id ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
+                }`}
+              >
+                <Icon aria-hidden className="h-5 w-5 shrink-0" />
+                <span>
+                  <span className="block text-sm font-semibold">{c.label}</span>
+                  <span className={`hidden text-xs lg:block ${category === c.id ? "opacity-80" : "text-muted-foreground"}`}>
+                    {c.description}
+                  </span>
                 </span>
-              </span>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </nav>
 
         <div>
@@ -170,9 +173,10 @@ function SegurancaSection() {
     });
     setBusy(false);
     if (updateError) {
-      setError(updateError.message.includes("Current password")
-        ? "Senha atual incorreta"
-        : updateError.message);
+      const m = updateError.message;
+      if (m.includes("Current password")) setError("Senha atual incorreta");
+      else if (m.toLowerCase().includes("weak") || m.toLowerCase().includes("leaked")) setError("Esta senha é muito fraca ou já apareceu em vazamentos. Escolha outra.");
+      else setError(m);
       return;
     }
     setCurrent("");
