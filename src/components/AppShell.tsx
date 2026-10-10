@@ -1,5 +1,5 @@
-import { useNavigate } from "@tanstack/react-router";
-import { Link, type ReactNode } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/cloudData";
 import { Logo } from "./Logo";

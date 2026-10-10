@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type Profile = { id: string; name: string; username: string; photo: string | null };
