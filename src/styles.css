@@ -65,6 +65,7 @@
 }
 
 :root {
+  color-scheme: dark;
   --radius: 0.875rem;
   --background: oklch(0.16 0.02 230);
   --foreground: oklch(0.96 0.01 200);
@@ -98,6 +99,44 @@
   --sidebar-accent-foreground: oklch(0.96 0.01 200);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.82 0.17 165);
+  --surface-shadow: oklch(0 0 0 / 60%);
+}
+
+.light {
+  color-scheme: light;
+  --background: oklch(0.985 0.003 200);
+  --foreground: oklch(0.24 0.02 230);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.46 0.1 165);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.007 200);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.95 0.007 200);
+  --muted-foreground: oklch(0.48 0.02 220);
+  --accent: oklch(0.93 0.015 165);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.54 0.2 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.87 0.009 200);
+  --input: oklch(0.82 0.01 200);
+  --ring: var(--primary);
+  --chart-1: var(--primary);
+  --chart-2: oklch(0.52 0.12 230);
+  --chart-3: oklch(0.55 0.12 80);
+  --chart-4: oklch(0.54 0.17 20);
+  --chart-5: oklch(0.52 0.1 300);
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --surface-shadow: oklch(0.3 0.02 200 / 12%);
 }
 
 @layer base {
@@ -126,8 +165,10 @@
     background: color-mix(in oklab, var(--card) 70%, transparent);
     border: 1px solid var(--border);
     backdrop-filter: blur(20px);
-    box-shadow: 0 30px 80px -30px oklch(0 0 0 / 60%);
+    box-shadow: 0 30px 80px -30px var(--surface-shadow);
   }
+  .light .login-bg { background: var(--background); }
+  .light .glass { background: var(--card); }
   .card-panel { @apply rounded-3xl border border-border bg-card p-6 md:p-8; }
   .field-label { @apply mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground; }
   .field { @apply w-full rounded-xl border border-input bg-background/60 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30; }

@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
-import { Lock, Palette, User } from "lucide-react";
+import { Check, Lock, Moon, Palette, Sun, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/ThemeProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { saveLogo, saveProfile, useLogo, useProfile, type Profile } from "@/lib/cloudData";
 import { readImage } from "@/lib/media";
@@ -14,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
       { name: "description", content: "Gerencie seu perfil, segurança e personalização." },
       { property: "og:title", content: "Configurações da Conta" },
       { property: "og:description", content: "Gerencie seu perfil, segurança e personalização." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SettingsPage,
@@ -23,6 +27,7 @@ const CATEGORIES = [
   { id: "perfil", label: "Perfil", icon: User, description: "Foto, nome e usuário" },
   { id: "seguranca", label: "Segurança", icon: Lock, description: "Alterar sua senha" },
   { id: "personalizacao", label: "Personalização", icon: Palette, description: "Logo do sistema" },
+  { id: "aparencia", label: "Aparência", icon: Sun, description: "Tema do aplicativo" },
 ] as const;
 
 type CategoryId = (typeof CATEGORIES)[number]["id"];
@@ -69,9 +74,27 @@ function SettingsPage() {
           {category === "perfil" && <PerfilSection userId={userId} userEmail={userEmail} />}
           {category === "seguranca" && <SegurancaSection />}
           {category === "personalizacao" && <PersonalizacaoSection />}
+          {category === "aparencia" && <AparenciaSection />}
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function AparenciaSection() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <section className="card-panel space-y-6">
+      <h2 className="font-display text-lg font-semibold">Tema</h2>
+      <div className="grid grid-cols-2 gap-3" role="group" aria-label="Tema do aplicativo">
+        {([{ id: "dark", label: "Escuro", icon: Moon }, { id: "light", label: "Claro", icon: Sun }] as const).map(({ id, label, icon: Icon }) => (
+          <Button key={id} variant={theme === id ? "default" : "outline"} className="h-24 flex-col gap-2" aria-pressed={theme === id} onClick={() => setTheme(id)}>
+            <Icon aria-hidden />
+            <span className="flex items-center gap-2">{label}{theme === id && <Check aria-hidden />}</span>
+          </Button>
+        ))}
+      </div>
+    </section>
   );
 }
 

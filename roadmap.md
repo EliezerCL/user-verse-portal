@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Concluído
+- [ ] Adicionar Aparência com temas Escuro/Claro e verificar persistência e aplicação no aplicativo.
 - [x] Ativar Lovable Cloud (backend: banco de dados, login, arquivos)
 - [x] Ativar login por e-mail e senha (substituir admin/admin)
 - [x] Migração: tabela de perfis + logo + políticas de acesso

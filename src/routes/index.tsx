@@ -10,6 +10,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Acesse o painel administrativo com seu e-mail e senha." },
       { property: "og:title", content: "Entrar — Painel" },
       { property: "og:description", content: "Acesse o painel administrativo com seu e-mail e senha." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LoginPage,
