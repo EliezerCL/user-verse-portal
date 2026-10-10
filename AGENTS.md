@@ -18,3 +18,4 @@
 - Foto de perfil e logo são salvos como data URL (base64, reduzidos no cliente via `src/lib/media.ts`) porque o workspace bloqueia buckets públicos de storage.
 - Rotas protegidas ficam sob `src/routes/_authenticated/` (gate `ssr: false` em `route.tsx`); a tela de login é pública em `src/routes/index.tsx`.
 - Mudança de senha usa `supabase.auth.updateUser({ password, current_password })`; o Cloud exige a senha atual (require_current_password ativo).
+- Appearance uses a shared ThemeProvider and semantic CSS tokens; only the theme preference is stored locally so every page stays consistent without introducing local authentication state.
