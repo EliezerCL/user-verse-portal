@@ -1,7 +1,7 @@
-import { useAppState } from "@/lib/store";
+import { useLogo } from "@/lib/cloudData";
 
 export function Logo({ size = 56 }: { size?: number }) {
-  const { logo } = useAppState();
+  const logo = useLogo();
   if (logo) return <img src={logo} alt="Logo" style={{ height: size }} className="w-auto object-contain" />;
   return (
     <div
