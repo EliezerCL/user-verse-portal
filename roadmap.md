@@ -1,10 +1,15 @@
 # Roadmap
 
-## Em andamento
-- [ ] Ativar Lovable Cloud (backend: banco de dados, login, arquivos)
-- [ ] Ativar login por e-mail e senha (substituir admin/admin)
-- [ ] Migração: tabela de perfis + logo + políticas de acesso
-- [ ] Tela de login: entrar e criar conta com e-mail/senha
-- [ ] Configurações por categorias salvando online (Perfil, Segurança, Personalização/logo)
-- [ ] Troca de senha com senha atual (autenticação)
-- [ ] Verificar fluxo completo no preview (criar conta, editar perfil, trocar senha, trocar logo)
+## Concluído
+- [x] Ativar Lovable Cloud (backend: banco de dados, login, arquivos)
+- [x] Ativar login por e-mail e senha (substituir admin/admin)
+- [x] Migração: tabela de perfis + logo + políticas de acesso
+- [x] Tela de login: entrar e criar conta com e-mail/senha
+- [x] Configurações por categorias salvando online (Perfil, Segurança, Personalização/logo)
+- [x] Troca de senha com senha atual (autenticação)
+- [x] Verificar fluxo completo no preview (login, troca de senha, logo, sair/entrar)
+
+## Observações
+- Conta inicial: admin@exemplo.com / admin123 (troca em Configurações → Segurança)
+- Novas contas precisam confirmar o e-mail antes do primeiro login (padrão do Cloud)
+- Bucket público de arquivos bloqueado pelo workspace; foto e logo são salvos como imagem no banco
