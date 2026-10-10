@@ -17,16 +17,19 @@ export type Database = {
       app_settings: {
         Row: {
           id: number
+          logo: string | null
           logo_url: string | null
           updated_at: string
         }
         Insert: {
           id?: number
+          logo?: string | null
           logo_url?: string | null
           updated_at?: string
         }
         Update: {
           id?: number
+          logo?: string | null
           logo_url?: string | null
           updated_at?: string
         }
@@ -37,6 +40,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          photo: string | null
           photo_url: string | null
           username: string
         }
@@ -44,6 +48,7 @@ export type Database = {
           created_at?: string
           id: string
           name?: string
+          photo?: string | null
           photo_url?: string | null
           username?: string
         }
@@ -51,6 +56,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          photo?: string | null
           photo_url?: string | null
           username?: string
         }
