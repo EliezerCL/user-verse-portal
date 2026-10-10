@@ -2,9 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
-import { readFile, setState, useAppState } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { saveLogo, saveProfile, useLogo, useProfile, type Profile } from "@/lib/cloudData";
+import { readImage } from "@/lib/media";
 
-export const Route = createFileRoute("/configuracoes")({
+export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
     meta: [
       { title: "Configurações da Conta" },
@@ -17,7 +19,7 @@ export const Route = createFileRoute("/configuracoes")({
 });
 
 const CATEGORIES = [
-  { id: "perfil", label: "Perfil", icon: "👤", description: "Foto, nome, e-mail e usuário" },
+  { id: "perfil", label: "Perfil", icon: "👤", description: "Foto, nome e usuário" },
   { id: "seguranca", label: "Segurança", icon: "🔒", description: "Alterar sua senha" },
   { id: "personalizacao", label: "Personalização", icon: "🎨", description: "Logo do sistema" },
 ] as const;
@@ -25,8 +27,16 @@ const CATEGORIES = [
 type CategoryId = (typeof CATEGORIES)[number]["id"];
 
 function SettingsPage() {
-  const s = useAppState();
   const [category, setCategory] = useState<CategoryId>("perfil");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUserId(data.session?.user.id ?? null);
+      setUserEmail(data.session?.user.email ?? null);
+    });
+  }, []);
 
   return (
     <AppShell title="Configurações">
@@ -52,7 +62,7 @@ function SettingsPage() {
         </nav>
 
         <div>
-          {category === "perfil" && <PerfilSection />}
+          {category === "perfil" && <PerfilSection userId={userId} userEmail={userEmail} />}
           {category === "seguranca" && <SegurancaSection />}
           {category === "personalizacao" && <PersonalizacaoSection />}
         </div>
@@ -61,18 +71,34 @@ function SettingsPage() {
   );
 }
 
-function PerfilSection() {
-  const s = useAppState();
-  const [form, setForm] = useState(s.user);
+function PerfilSection({ userId, userEmail }: { userId: string | null; userEmail: string | null }) {
+  const profile = useProfile();
+  const [form, setForm] = useState<Partial<Profile> | null>(null);
   const [msg, setMsg] = useState("");
-  useEffect(() => setForm(s.user), [s.user]);
+  const [error, setError] = useState("");
 
-  function save(e: React.FormEvent) {
+  useEffect(() => {
+    if (profile && form === null) setForm({ name: profile.name, username: profile.username, photo: profile.photo });
+  }, [profile, form]);
+
+  if (!userId || !form) return <div className="card-panel text-sm text-muted-foreground">Carregando...</div>;
+
+  async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.username.trim()) return setMsg("Usuário não pode ficar vazio");
-    setState({ user: { ...form, password: s.user.password } });
-    setMsg("Perfil salvo!");
-    setTimeout(() => setMsg(""), 2500);
+    setError("");
+    setMsg("");
+    if (!form!.name?.trim()) return setError("O nome não pode ficar vazio");
+    try {
+      await saveProfile(userId!, {
+        name: form!.name,
+        username: form!.username ?? "",
+        photo: form!.photo ?? null,
+      });
+      setMsg("Perfil salvo!");
+      setTimeout(() => setMsg(""), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao salvar");
+    }
   }
 
   return (
@@ -82,28 +108,40 @@ function PerfilSection() {
           <img src={form.photo} alt="" className="h-36 w-36 rounded-full object-cover ring-4 ring-primary" />
         ) : (
           <div className="grid h-36 w-36 place-items-center rounded-full bg-secondary font-display text-5xl">
-            {form.name.charAt(0).toUpperCase()}
+            {(form.name || "?").charAt(0).toUpperCase()}
           </div>
         )}
         <label className="btn-ghost cursor-pointer">
           Alterar foto
           <input type="file" accept="image/*" hidden onChange={async (e) => {
             const f = e.target.files?.[0];
-            if (f) setForm({ ...form, photo: await readFile(f) });
+            if (f) setForm({ ...form, photo: await readImage(f, 512, "image/jpeg") });
           }} />
         </label>
+        {form.photo && (
+          <button type="button" className="btn-ghost" onClick={() => setForm({ ...form, photo: null })}>
+            Remover foto
+          </button>
+        )}
       </div>
       <div className="space-y-4">
         <h2 className="font-display text-lg font-semibold">Dados pessoais</h2>
-        {([["name", "Nome"], ["email", "E-mail"], ["username", "Usuário"]] as const).map(([k, l]) => (
-          <label key={k} className="block">
-            <span className="field-label">{l}</span>
-            <input className="field" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
-          </label>
-        ))}
+        <label className="block">
+          <span className="field-label">E-mail (não editável)</span>
+          <input className="field opacity-60" value={userEmail ?? ""} readOnly />
+        </label>
+        <label className="block">
+          <span className="field-label">Nome</span>
+          <input className="field" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        </label>
+        <label className="block">
+          <span className="field-label">Usuário</span>
+          <input className="field" value={form.username ?? ""} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+        </label>
         <div className="flex items-center gap-4 pt-2">
           <button className="btn-primary">Salvar</button>
           {msg && <span className="text-sm text-primary">{msg}</span>}
+          {error && <span className="text-sm text-destructive">{error}</span>}
         </div>
       </div>
     </form>
@@ -111,21 +149,31 @@ function PerfilSection() {
 }
 
 function SegurancaSection() {
-  const s = useAppState();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  function save(e: React.FormEvent) {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setMsg("");
-    if (current !== s.user.password) return setError("Senha atual incorreta");
-    if (next.length < 4) return setError("A nova senha precisa ter pelo menos 4 caracteres");
+    if (next.length < 6) return setError("A nova senha precisa ter pelo menos 6 caracteres");
     if (next !== confirm) return setError("A confirmação não confere com a nova senha");
-    setState({ user: { ...s.user, password: next } });
+    setBusy(true);
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: next,
+      current_password: current,
+    });
+    setBusy(false);
+    if (updateError) {
+      setError(updateError.message.includes("Current password")
+        ? "Senha atual incorreta"
+        : updateError.message);
+      return;
+    }
     setCurrent("");
     setNext("");
     setConfirm("");
@@ -137,22 +185,22 @@ function SegurancaSection() {
     <form onSubmit={save} className="card-panel space-y-4">
       <div>
         <h2 className="font-display text-lg font-semibold">Alterar senha</h2>
-        <p className="text-sm text-muted-foreground">Use no mínimo 4 caracteres. Evite senhas óbvias.</p>
+        <p className="text-sm text-muted-foreground">Use no mínimo 6 caracteres. Evite senhas óbvias.</p>
       </div>
       <label className="block">
         <span className="field-label">Senha atual</span>
-        <input className="field" type="password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+        <input className="field" type="password" value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" />
       </label>
       <label className="block">
         <span className="field-label">Nova senha</span>
-        <input className="field" type="password" value={next} onChange={(e) => setNext(e.target.value)} />
+        <input className="field" type="password" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
       </label>
       <label className="block">
         <span className="field-label">Confirmar nova senha</span>
-        <input className="field" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <input className="field" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
       </label>
       <div className="flex items-center gap-4 pt-2">
-        <button className="btn-primary">Atualizar senha</button>
+        <button className="btn-primary" disabled={busy}>Atualizar senha</button>
         {msg && <span className="text-sm text-primary">{msg}</span>}
         {error && <span className="text-sm text-destructive">{error}</span>}
       </div>
@@ -161,22 +209,43 @@ function SegurancaSection() {
 }
 
 function PersonalizacaoSection() {
-  const s = useAppState();
+  const logo = useLogo();
+  const [msg, setMsg] = useState("");
+  const [error, setError] = useState("");
+
+  async function upload(file: File) {
+    setError("");
+    setMsg("");
+    try {
+      await saveLogo(await readImage(file, 256, "image/png"));
+      setMsg("Logo atualizado!");
+      setTimeout(() => setMsg(""), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao salvar o logo");
+    }
+  }
+
   return (
     <section className="card-panel">
       <h2 className="font-display text-lg font-semibold">Logo do sistema</h2>
-      <p className="text-sm text-muted-foreground">Aparece na tela de login e no topo do painel.</p>
+      <p className="text-sm text-muted-foreground">Aparece na tela de login e no topo do painel, em qualquer aparelho.</p>
       <div className="mt-6 flex flex-wrap items-center gap-6">
         <div className="grid h-28 w-28 place-items-center rounded-2xl bg-secondary p-3"><Logo size={72} /></div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <label className="btn-primary cursor-pointer">
             Enviar novo logo
             <input type="file" accept="image/*" hidden onChange={async (e) => {
               const f = e.target.files?.[0];
-              if (f) setState({ logo: await readFile(f) });
+              if (f) await upload(f);
             }} />
           </label>
-          {s.logo && <button className="btn-ghost" onClick={() => setState({ logo: null })}>Restaurar padrão</button>}
+          {logo && (
+            <button className="btn-ghost" onClick={() => saveLogo(null)}>Restaurar padrão</button>
+          )}
+        </div>
+        <div className="w-full flex items-center gap-4">
+          {msg && <span className="text-sm text-primary">{msg}</span>}
+          {error && <span className="text-sm text-destructive">{error}</span>}
         </div>
       </div>
     </section>
