@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
+import { Lock, Palette, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { saveLogo, saveProfile, useLogo, useProfile, type Profile } from "@/lib/cloudData";
 import { readImage } from "@/lib/media";
@@ -19,9 +20,9 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
 });
 
 const CATEGORIES = [
-  { id: "perfil", label: "Perfil", icon: "👤", description: "Foto, nome e usuário" },
-  { id: "seguranca", label: "Segurança", icon: "🔒", description: "Alterar sua senha" },
-  { id: "personalizacao", label: "Personalização", icon: "🎨", description: "Logo do sistema" },
+  { id: "perfil", label: "Perfil", icon: User, description: "Foto, nome e usuário" },
+  { id: "seguranca", label: "Segurança", icon: Lock, description: "Alterar sua senha" },
+  { id: "personalizacao", label: "Personalização", icon: Palette, description: "Logo do sistema" },
 ] as const;
 
 type CategoryId = (typeof CATEGORIES)[number]["id"];
