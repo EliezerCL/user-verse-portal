@@ -1,19 +1,17 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
-import { logout, useAppState } from "@/lib/store";
+import { useNavigate } from "@tanstack/react-router";
+import { Link, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/lib/cloudData";
 import { Logo } from "./Logo";
 
 export function AppShell({ title, children }: { title: string; children: ReactNode }) {
-  const s = useAppState();
+  const profile = useProfile();
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    setReady(true);
-  }, []);
-  useEffect(() => {
-    if (ready && !s.loggedIn) navigate({ to: "/", replace: true });
-  }, [ready, s.loggedIn, navigate]);
-  if (!ready || !s.loggedIn) return null;
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/", replace: true });
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,14 +23,14 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
             <Link to="/configuracoes" className="nav-link" activeProps={{ className: "nav-link-active" }}>Configurações</Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">
-            {s.user.photo ? (
-              <img src={s.user.photo} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-primary" />
+            {profile?.photo ? (
+              <img src={profile.photo} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-primary" />
             ) : (
               <div className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-sm font-semibold">
-                {s.user.name.charAt(0).toUpperCase()}
+                {(profile?.name || "?").charAt(0).toUpperCase()}
               </div>
             )}
-            <button onClick={() => { logout(); navigate({ to: "/", replace: true }); }} className="btn-ghost">Sair</button>
+            <button onClick={signOut} className="btn-ghost">Sair</button>
           </div>
         </div>
       </header>
